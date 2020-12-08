@@ -82,4 +82,21 @@ Run application more efficiently with makefile. The make utility requires a file
   You can acces on 127.0.0.1:5000
 
 
+# SQL Flask migrate
 
+Show commands list:
+```
+flask db 
+```
+Create new migration repository:
+```
+flask db init
+```
+Generate new revision file:
+```
+flask db migrate
+```
+Upgrade table to te last version:
+```
+flask db upgrade
+```
