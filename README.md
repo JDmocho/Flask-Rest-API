@@ -5,6 +5,8 @@
 
 Simple Rest API implemented in Flask.
 
+Based on the curse "REST API krok po kroku - Python | Flask | MySQL" by Szymon Wolny
+
 ### Environment
 
    - python 3.8.0
@@ -82,7 +84,7 @@ Run application more efficiently with makefile. The make utility requires a file
   You can acces on 127.0.0.1:5000
 
 
-# SQL Flask migrate
+### SQL Flask migrate
 
 Show commands list:
 ```
@@ -100,3 +102,7 @@ Upgrade table to te last version:
 ```
 flask db upgrade
 ```
+
+# pip install marshmallow
+
+# pip install webargs
