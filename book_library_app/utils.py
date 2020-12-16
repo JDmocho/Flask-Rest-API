@@ -1,6 +1,15 @@
-from flask import request
-from werkzeug.exceptions import UnsupportedMediaType
+import re
+from flask import request, url_for
+from flask_sqlalchemy import DefaultMeta, BaseQuery
 from functools import wraps
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.sql.expression import BinaryExpression
+from typing import Tuple
+from werkzeug.exceptions import UnsupportedMediaType
+
+from config import Config
+
+COMMPARISON_OPERATORS_RE = re.compile(r'(.*)\[(gte|gt|lte|lt)\]')
 
 
 def validate_json_content_type(func):
@@ -12,3 +21,90 @@ def validate_json_content_type(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def get_schema_args(model: DefaultMeta) -> dict:
+    schema_args = {'many': True}
+    fields = request.args.get('fields')
+    if fields:
+        fileds_only = []
+        for field in fields.split(','):
+            if field in model.__table__.columns:
+                fileds_only.append(field)
+
+        schema_args['only'] = fileds_only
+    # print(schema_args)
+    return schema_args
+
+
+def apply_order(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
+    sort_keys = request.args.get('sort')
+    if sort_keys:
+        for key in sort_keys.split(','):
+            desc = False
+            if key.startswith('-'):
+                key = key[1:]
+                desc = True
+            column_attr = getattr(model, key, None)
+            if column_attr is not None:
+                if desc:
+                    query = query.order_by(column_attr.desc())
+                else:
+                    query.order_by(column_attr)
+    return query
+
+
+def _get_filter_argument(column_name: InstrumentedAttribute, value: str, operator: str) -> BinaryExpression:
+    operator_mapping = {
+        '==': column_name == value,
+        'gte': column_name >= value,
+        'gt': column_name > value,
+        'lte': column_name <= value,
+        'lt': column_name < value
+    }
+    return operator_mapping[operator]
+
+
+def apply_filter(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
+    for param, value in request.args.items():
+
+        if param not in {'fields', 'sort', 'page', 'limit'}:
+            operator = '=='
+            match = COMMPARISON_OPERATORS_RE.match(param)
+            if match is not None:
+                param, operator = match.groups()
+            column_attr = getattr(model, param, None)
+            if column_attr is not None:
+                value = model.additional_validation(param, value)
+                if value is None:
+                    continue
+                filter_argument = _get_filter_argument(column_attr, value, operator)
+                query = query.filter(filter_argument)
+    print(query)
+    return query
+
+
+def get_pagination(query: BaseQuery, func_name: str) -> Tuple[list, dict]:
+    page = request.args.get('page', 1, type=int)
+    limit = request.args.get('limit', Config.PER_PEG, type=int)
+
+    params_dictionary = {}
+    for key, value in request.args.items():
+        if key != 'page':
+            params_dictionary[key] = value
+
+    paginate_obj = query.paginate(page, limit, False)
+
+    pagination = {
+        'total_pages': paginate_obj.pages,
+        'total_records': paginate_obj.total,
+        'current_page': url_for(func_name, page=page, **params_dictionary)
+    }
+
+    if paginate_obj.has_next:
+        pagination['next_page'] = url_for(func_name, page=page + 1, **params_dictionary)
+
+    if paginate_obj.has_prev:
+        pagination['previous_page'] = url_for(func_name, page=page - 1, **params_dictionary)
+
+    return paginate_obj.items, pagination
