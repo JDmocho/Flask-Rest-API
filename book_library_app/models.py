@@ -8,7 +8,6 @@ from book_library_app import db
 from datetime import datetime
 from marshmallow import Schema, fields, validate, validates, ValidationError
 
-
 from book_library_app import Config
 
 COMMPARISON_OPERATORS_RE = re.compile(r'(.*)\[(gte|gt|lte|lt)\]')
@@ -20,6 +19,7 @@ class Author(db.Model):
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     birth_date = db.Column(db.Date, nullable=False)
+    books = db.relationship('Book', back_populates='author', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<{self.__class__.__name__}>: {self.first_name} {self.last_name}'
@@ -105,12 +105,26 @@ class Author(db.Model):
         }
 
         if paginate_obj.has_next:
-            pagination['next_page'] = url_for('authors.get_authors', page=page+1, **params_dictionary)
+            pagination['next_page'] = url_for('authors.get_authors', page=page + 1, **params_dictionary)
 
         if paginate_obj.has_prev:
-            pagination['previous_page'] = url_for('authors.get_authors', page=page-1, **params_dictionary)
+            pagination['previous_page'] = url_for('authors.get_authors', page=page - 1, **params_dictionary)
 
         return paginate_obj.items, pagination
+
+
+class Book(db.Model):
+    __tablename__ = 'books'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(50), nullable=False)
+    isbn = db.Column(db.BigInteger, nullable=False, unique=True)
+    number_of_pages = db.Column(db.Integer, nullable=False)
+    description = db.Column(db.Text)
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), nullable=False)
+    author = db.relationship('Author', back_populates='books')
+
+    def __repr__(self):
+        return f'{self.title} - {self.author.first_name} {self.author.last_name}'
 
 
 class AuthorSchema(Schema):
