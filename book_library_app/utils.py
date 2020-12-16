@@ -1,5 +1,5 @@
 import re
-from flask import request, url_for
+from flask import request, url_for, current_app
 from flask_sqlalchemy import DefaultMeta, BaseQuery
 from functools import wraps
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -86,7 +86,7 @@ def apply_filter(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
 
 def get_pagination(query: BaseQuery, func_name: str) -> Tuple[list, dict]:
     page = request.args.get('page', 1, type=int)
-    limit = request.args.get('limit', Config.PER_PEG, type=int)
+    limit = request.args.get('limit', current_app.config.get('PER_PEG', 5), type=int)
 
     params_dictionary = {}
     for key, value in request.args.items():
