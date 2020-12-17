@@ -27,6 +27,7 @@ def get_schema_args(model: DefaultMeta) -> dict:
     schema_args = {'many': True}
     fields = request.args.get('fields')
     if fields:
+        fields.replace(" ", "")
         fileds_only = []
         for field in fields.split(','):
             if field in model.__table__.columns:
@@ -39,6 +40,7 @@ def get_schema_args(model: DefaultMeta) -> dict:
 
 def apply_order(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
     sort_keys = request.args.get('sort')
+    sort_keys.replace(" ", "")
     if sort_keys:
         for key in sort_keys.split(','):
             desc = False
@@ -46,12 +48,17 @@ def apply_order(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
                 key = key[1:]
                 desc = True
             column_attr = getattr(model, key, None)
+
             if column_attr is not None:
                 if desc:
                     query = query.order_by(column_attr.desc())
+
                 else:
-                    query.order_by(column_attr)
+                    query =  query.order_by(column_attr)
+    print(query)
     return query
+
+
 
 
 def _get_filter_argument(column_name: InstrumentedAttribute, value: str, operator: str) -> BinaryExpression:
@@ -80,7 +87,7 @@ def apply_filter(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
                     continue
                 filter_argument = _get_filter_argument(column_attr, value, operator)
                 query = query.filter(filter_argument)
-    print(query)
+    #print(query)
     return query
 
 
