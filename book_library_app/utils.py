@@ -63,8 +63,8 @@ def get_schema_args(model: DefaultMeta) -> dict:
 
 def apply_order(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
     sort_keys = request.args.get('sort')
-    sort_keys.replace(" ", "")
     if sort_keys:
+        sort_keys.replace(" ", "")
         for key in sort_keys.split(','):
             desc = False
             if key.startswith('-'):
