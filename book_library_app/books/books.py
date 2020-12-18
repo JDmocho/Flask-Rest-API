@@ -60,3 +60,16 @@ def update_book(args: dict, book_id: int):
         'success': True,
         'data': book_schema.dump(book)
     })
+
+
+@books_bp.route('/books/<int:book_id>', methods=['DELETE'])
+def delete_book(book_id: int):
+    book = Book.query.get_or_404(book_id, description=f'Book with id {book_id} not found')
+
+    db.session.delete(book)
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'data': f'Book with id {book_id} has been deleted'
+    })
