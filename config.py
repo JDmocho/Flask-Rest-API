@@ -13,6 +13,3 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PER_PEG = 5
     JWT_EXPIRED_MINUTES = 30
-
-
-

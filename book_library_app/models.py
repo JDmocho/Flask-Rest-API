@@ -62,8 +62,6 @@ class User(db.Model):
     def is_password_valid(self, password: str) -> bool:
         return check_password_hash(self.password, password)
 
-
-
     def generate_jwt(self) -> bytes:
         payload = {
             'user_id': self.id,

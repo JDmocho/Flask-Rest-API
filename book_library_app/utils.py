@@ -1,5 +1,6 @@
+import jwt
 import re
-from flask import request, url_for, current_app
+from flask import request, url_for, current_app, abort
 from flask_sqlalchemy import DefaultMeta, BaseQuery
 from functools import wraps
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -19,6 +20,28 @@ def validate_json_content_type(func):
         if data is None:
             raise UnsupportedMediaType('Content type must be application/json')
         return func(*args, **kwargs)
+
+    return wrapper
+
+
+def token_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        token = None
+        auth = request.headers.get('Authorization')
+        if auth:
+            token = auth.split(' ')[1]
+        if token is None:
+            abort(401, description='Missing token. Please login or register')
+
+        try:
+            payload = jwt.decode(token, current_app.config.get('SECRET_KEY'))
+        except jwt.ExpiredSignatureError:
+            abort(401, description='Expired token. Please login to get new token')
+        except jwt.InvalidTokenError:
+            abort(401, description='Invalid token. Please login or register')
+        else:
+            return func(payload['user_id'], *args, **kwargs)
 
     return wrapper
 
@@ -54,11 +77,9 @@ def apply_order(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
                     query = query.order_by(column_attr.desc())
 
                 else:
-                    query =  query.order_by(column_attr)
+                    query = query.order_by(column_attr)
     print(query)
     return query
-
-
 
 
 def _get_filter_argument(column_name: InstrumentedAttribute, value: str, operator: str) -> BinaryExpression:
@@ -87,7 +108,7 @@ def apply_filter(model: DefaultMeta, query: BaseQuery) -> BaseQuery:
                     continue
                 filter_argument = _get_filter_argument(column_attr, value, operator)
                 query = query.filter(filter_argument)
-    #print(query)
+    # print(query)
     return query
 
 
