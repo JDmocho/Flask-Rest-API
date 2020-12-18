@@ -42,6 +42,15 @@ class Book(db.Model):
         return value
 
 
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False, unique=True, index=True)
+    email = db.Column(db.String(255), nullable=False, unique=True)
+    password = db.Column(db.String(255), nullable=False)
+    create_date = db.Column(db.DateTime(255), default=datetime.utcnow)
+
+
 class AuthorSchema(Schema):
     id = fields.Integer(dump_only=True)
     first_name = fields.String(required=True, validate=validate.Length(max=50))
