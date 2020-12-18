@@ -3,7 +3,7 @@ from flask import current_app
 
 from datetime import datetime, date, timedelta
 from marshmallow import Schema, fields, validate, validates, ValidationError
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from book_library_app import db
 
@@ -58,6 +58,11 @@ class User(db.Model):
     @staticmethod
     def generate_hashed_password(password: str) -> str:
         return generate_password_hash(password)
+
+    def is_password_valid(self, password: str) -> bool:
+        return check_password_hash(self.password, password)
+
+
 
     def generate_jwt(self) -> bytes:
         payload = {
