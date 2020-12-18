@@ -88,3 +88,20 @@ def get_all_author_books(author_id: int):
         'number_of_records': len(items)
     })
 
+
+@books_bp.route('/authors/<int:author_id>/books', methods=['POST'])
+@validate_json_content_type
+@use_args(BookSchema(exclude=['author_id']), error_status_code=400)
+def create_book(args: dict, author_id: int):
+    Author.query.get_or_404(author_id, description=f'Book with id {author_id} not found')
+    if Book.query.filter(Book.isbn == args['isbn']).first():
+        abort(409, description=f'Book with ISBN {args["isbn"]} already exists')
+
+    book = Book(author_id=author_id, **args)
+
+    db.session.add(book)
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'data': book_schema.dump(book)
+    }), 201
