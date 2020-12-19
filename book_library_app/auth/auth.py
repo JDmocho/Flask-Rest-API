@@ -4,7 +4,7 @@ from webargs.flaskparser import use_args
 from book_library_app import db
 from book_library_app.auth import auth_bp
 from book_library_app.models import User, user_schema, UserSchema
-from book_library_app.utils import validate_json_content_type
+from book_library_app.utils import validate_json_content_type, token_required
 
 
 @auth_bp.route('/register', methods=['POST'])
@@ -46,4 +46,15 @@ def login(args: dict):
     return jsonify({
         'success': True,
         'token': token.decode()
+    })
+
+
+@auth_bp.route('/me', methods=['GET'])
+@token_required
+def get_current_user(user_id: str):
+    user = User.query.get_or_404(user_id, description='User with id {user_id} not found')
+
+    return jsonify({
+        'success': True,
+        'data': user_schema.dump(user)
     })
