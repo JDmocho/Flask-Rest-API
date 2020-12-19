@@ -78,3 +78,25 @@ def update_user_password(user_id: int, args: dict):
         'success': True,
         'data': user_schema.dump(user)
     })
+
+
+@auth_bp.route('/update/data', methods=['PUT'])
+@token_required
+@validate_json_content_type
+@use_args(UserSchema(only=['username', 'email']), error_status_code=400)
+def update_user_data(user_id: int, args: dict):
+    if User.query.filter(User.username == args['username']).first():
+        abort(409, description=f'User with username {args["username"]} already exists')
+    if User.query.filter(User.email == args['email']).first():
+        abort(409, description=f'User with email {args["email"]} already exists')
+
+    user = User.query.get_or_404(user_id, description='User with id {user_id} not found')
+
+    user.username = args['username']
+    user.email = args['email']
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'data': user_schema.dump(user)
+    })
