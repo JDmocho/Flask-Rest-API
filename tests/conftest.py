@@ -1,6 +1,7 @@
 import pytest
 
 from book_library_app import create_app, db
+from book_library_app.commands.db_manage_commands import add_data
 
 
 @pytest.fixture
@@ -39,3 +40,9 @@ def token(client, user):
         'password': user['password'],
     })
     return response.get_json()['token']
+
+
+@pytest.fixture
+def sample_data(app):
+    runner = app.test_cli_runner()
+    runner.invoke(add_data)
