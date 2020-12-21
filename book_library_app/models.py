@@ -76,6 +76,7 @@ class AuthorSchema(Schema):
     first_name = fields.String(required=True, validate=validate.Length(max=50))
     last_name = fields.String(required=True, validate=validate.Length(max=50))
     birth_date = fields.Date('%d-%m-%Y', required=True)
+    books = fields.List(fields.Nested(lambda: BookSchema(exclude=['author'])))
 
     @validates('birth_date')
     def validate_birth_date(self, value):
@@ -103,7 +104,7 @@ class UserSchema(Schema):
     username = fields.String(required=True, validate=validate.Length(max=255))
     email = fields.Email(required=True)
     password = fields.String(required=True, load_only=True, validate=validate.Length(min=6, max=255))
-    creation_date = fields.DateTime(dump_only=True)
+    create_date = fields.DateTime(dump_only=True)
 
 
 class UserPasswordUpdateSchema(Schema):

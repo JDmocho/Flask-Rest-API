@@ -8,7 +8,6 @@ from sqlalchemy.sql.expression import BinaryExpression
 from typing import Tuple
 from werkzeug.exceptions import UnsupportedMediaType
 
-from config import Config
 
 COMMPARISON_OPERATORS_RE = re.compile(r'(.*)\[(gte|gt|lte|lt)\]')
 
