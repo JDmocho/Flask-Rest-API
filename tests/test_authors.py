@@ -104,3 +104,49 @@ def test_create_authors(client, token, author):
     assert response.status_code == 200
     assert response.headers['Content-Type'] == 'application/json'
     assert response_data == expected_result
+
+
+@pytest.mark.parametrize(
+    'data,missing_field',
+    [
+        ({'last_name': 'Mickiewicz', 'birth_date': '24-12-1798'}, 'first_name'),
+        ({'first_name': 'Adam', 'birth_date': '24-12-1798'}, 'last_name'),
+        ({'first_name': 'Adam', 'last_name': 'Mickiewicz'}, 'birth_date'),
+    ]
+)
+def test_create_author_invalid_data(client, token, data, missing_field):
+    response = client.post('/api/v1/authors',
+                           json=data,
+                           headers={
+                               'Authorization': f'Bearer {token}'
+                           })
+    response_data = response.get_json()
+    assert response.status_code == 400
+    assert response.headers['Content-Type'] == 'application/json'
+    assert response_data['success'] is False
+    assert 'data' not in response_data
+    assert missing_field in response_data['message']
+    assert 'Missing data for required field.' in response_data['message'][missing_field]
+
+
+def test_create_author_invalid_content_type(client, token, author):
+    response = client.post('/api/v1/authors',
+                           data=author,
+                           headers={
+                               'Authorization': f'Bearer {token}'
+                           })
+    response_data = response.get_json()
+    assert response.status_code == 415
+    assert response.headers['Content-Type'] == 'application/json'
+    assert response_data['success'] is False
+    assert 'data' not in response_data
+
+
+def test_create_author_missing_token(client, author):
+    response = client.post('/api/v1/authors',
+                           json=author)
+    response_data = response.get_json()
+    assert response.status_code == 401
+    assert response.headers['Content-Type'] == 'application/json'
+    assert response_data['success'] is False
+    assert 'data' not in response_data
