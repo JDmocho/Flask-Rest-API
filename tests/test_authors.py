@@ -71,10 +71,36 @@ def test_get_single_author(client, sample_data):
     assert len(response_data['data']['books']) == 1
 
 
-def test_get_single_author_not_found(client, sample_data):
+def test_get_single_author_not_found(client):
     response = client.get('/api/v1/authors/30')
     response_data = response.get_json()
     assert response.status_code == 404
     assert response.headers['Content-Type'] == 'application/json'
     assert response_data['success'] is False
     assert 'data' not in response_data
+
+
+def test_create_authors(client, token, author):
+    response = client.post('/api/v1/authors',
+                           json=author,
+                           headers={
+                               'Authorization': f'Bearer {token}'
+                           })
+    response_data = response.get_json()
+    expected_result = {
+        'success': True,
+        'data': {
+            **author,
+            'id': 1,
+            'books': []
+        }
+    }
+    assert response.status_code == 201
+    assert response.headers['Content-Type'] == 'application/json'
+    assert response_data == expected_result
+
+    response = client.get('/api/v1/authors/1')
+    response_data = response.get_json()
+    assert response.status_code == 200
+    assert response.headers['Content-Type'] == 'application/json'
+    assert response_data == expected_result

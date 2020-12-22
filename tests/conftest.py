@@ -56,3 +56,11 @@ def author():
         'birth_date': '24-12-1798'
     }
 
+
+@pytest.fixture
+def author():
+    return {
+        'first_name': 'Adam',
+        'last_name': 'Mickiewicz',
+        'birth_date': '24-12-1798'
+    }
