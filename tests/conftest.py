@@ -58,9 +58,21 @@ def author():
 
 
 @pytest.fixture
-def author():
+def book():
     return {
-        'first_name': 'Adam',
-        'last_name': 'Mickiewicz',
-        'birth_date': '24-12-1798'
+        "title": "New book",
+        "number_of_pages": 478,
+        "isbn": 4444444444444,
+        "description": "Some description"
+    }
+
+
+@pytest.fixture
+def update():
+    return {
+        "title": "some book",
+        "isbn": 1234567890123,
+        "number_of_pages": 741,
+        "description": "some description",
+        "author_id": 10
     }
