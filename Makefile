@@ -5,4 +5,7 @@ postman:
 		postman
 
 run:
-		python app.py
+		flask run
+
+tests:
+		python -m pytest -vv
