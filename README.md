@@ -103,6 +103,29 @@ Upgrade table to te last version:
 flask db upgrade
 ```
 
-# pip install marshmallow
+### DB manage
 
-# pip install webargs
+Add sample data to database
+```
+flask db-manage add-data 
+```
+
+Remove all data from the database
+```
+flask db-manage remove-data 
+```
+
+### Tests
+To run pytest
+```
+make tests
+```
+
+[Postman colection and tests](postman_collection.json)
+
+### API documentation
+
+
+[Postman documentation](https://documenter.getpostman.com/view/13756087/TVzLnKSo#16489230-84ee-4299-8acb-0d8320f6badb)
+
+[Html documentation](documentation.html)
